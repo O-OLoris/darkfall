@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DarkFall FreeRoam - Serveur FiveM PvP</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #cc0000;
+    --red-dark: #990000;
+    --red-glow: rgba(204,0,0,0.3);
+    --black: #080808;
+    --dark: #0e0e0e;
+    --card: #111111;
+    --border: rgba(204,0,0,0.2);
+    --text: #f0f0f0;
+    --muted: #666;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Rajdhani', sans-serif;
+    background: var(--black);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 60px; height: 64px;
+    background: rgba(8,8,8,0.92);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+  }
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px; letter-spacing: 4px; color: #fff;
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--red); }
+  .nav-links { display: flex; gap: 32px; align-items: center; }
+  .nav-links a {
+    color: #999; text-decoration: none;
+    font-size: 14px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--red); }
+  .nav-right { display: flex; gap: 12px; align-items: center; }
+  .btn-discord {
+    display: flex; align-items: center; gap: 8px;
+    background: #5865F2; color: #fff;
+    padding: 9px 20px; border: none; cursor: pointer;
+    font-family: 'Rajdhani', sans-serif; font-size: 14px;
+    font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    transition: background 0.2s;
+    text-decoration: none;
+  }
+  .btn-discord:hover { background: #4752c4; }
+  .btn-admin {
+    background: transparent; color: var(--muted);
+    padding: 9px 16px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;
+    font-family: 'Rajdhani', sans-serif; font-size: 12px;
+    font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+    transition: all 0.2s;
+  }
+  .btn-admin:hover { border-color: var(--red); color: var(--red); }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative; width: 100%; height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background-size: cover; background-position: center;
+    background-repeat: no-repeat;
+    filter: brightness(0.4);
+    transition: background-image 0.5s;
+  }
+  .hero-gradient {
+    position: absolute; inset: 0; z-index: 1;
+    background: linear-gradient(180deg, rgba(8,8,8,0.2) 0%, rgba(8,8,8,0.5) 60%, rgba(8,8,8,1) 100%);
+  }
+  .hero-content {
+    position: relative; z-index: 2; text-align: center; padding: 0 20px;
+  }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: rgba(204,0,0,0.15); border: 1px solid var(--red);
+    color: var(--red); font-size: 12px; font-weight: 700;
+    letter-spacing: 4px; text-transform: uppercase;
+    padding: 7px 20px; margin-bottom: 28px;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  }
+  .hero-eyebrow::before, .hero-eyebrow::after {
+    content: ''; width: 6px; height: 6px;
+    background: var(--red); clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  }
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    line-height: 0.9; letter-spacing: 4px; color: #fff;
+    margin-bottom: 10px;
+  }
+  .hero-title .line1 { font-size: 110px; display: block; }
+  .hero-title .line2 { font-size: 72px; display: block; color: var(--red); letter-spacing: 10px; }
+  .hero-sub {
+    font-size: 16px; font-weight: 600; letter-spacing: 6px;
+    color: #666; text-transform: uppercase; margin-bottom: 44px;
+  }
+  .hero-buttons { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn-primary {
+    background: var(--red); color: #fff;
+    padding: 14px 38px; border: none; cursor: pointer;
+    font-family: 'Rajdhani', sans-serif; font-size: 16px;
+    font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+    transition: background 0.2s, transform 0.1s;
+    text-decoration: none; display: inline-block;
+  }
+  .btn-primary:hover { background: #ff1a1a; transform: scale(1.03); }
+  .btn-outline {
+    background: transparent; color: #fff;
+    padding: 14px 38px; border: 1px solid rgba(255,255,255,0.25); cursor: pointer;
+    font-family: 'Rajdhani', sans-serif; font-size: 16px;
+    font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+    transition: all 0.2s; text-decoration: none; display: inline-block;
+  }
+  .btn-outline:hover { border-color: var(--red); color: var(--red); }
+
+  /* Stats bar */
+  .stats-bar {
+    position: absolute; bottom: 0; left: 0; right: 0; z-index: 3;
+    display: flex;
+    background: rgba(8,8,8,0.9);
+    border-top: 1px solid var(--border);
+  }
+  .stat-item {
+    flex: 1; padding: 20px 0; text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 34px; color: var(--red); letter-spacing: 2px;
+    display: block;
+  }
+  .stat-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 3px;
+    color: var(--muted); text-transform: uppercase;
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    padding: 100px 60px;
+    max-width: 1300px; margin: 0 auto;
+  }
+  .section-header { text-align: center; margin-bottom: 70px; }
+  .section-tag {
+    font-size: 11px; font-weight: 700; letter-spacing: 5px;
+    color: var(--red); text-transform: uppercase; margin-bottom: 14px;
+  }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 58px; letter-spacing: 4px; color: #fff;
+    line-height: 1;
+  }
+  .section-title .accent { color: var(--red); }
+  .red-line {
+    width: 50px; height: 3px; background: var(--red);
+    margin: 18px auto 0;
+  }
+
+  /* ── FEATURES ── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .feature-card {
+    background: var(--card);
+    padding: 40px 30px;
+    position: relative; overflow: hidden;
+    transition: background 0.25s;
+  }
+  .feature-card::after {
+    content: ''; position: absolute;
+    top: 0; left: 0; width: 3px; height: 0;
+    background: var(--red); transition: height 0.35s ease;
+  }
+  .feature-card:hover { background: #161616; }
+  .feature-card:hover::after { height: 100%; }
+  .feature-icon { font-size: 36px; margin-bottom: 18px; display: block; }
+  .feature-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 2px; color: #fff; margin-bottom: 10px;
+  }
+  .feature-desc { font-size: 15px; color: #666; line-height: 1.65; }
+
+  /* ── RULES ── */
+  .rules-section {
+    background: var(--dark);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .rules-inner {
+    padding: 100px 60px; max-width: 1300px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1.2fr; gap: 80px;
+    align-items: center;
+  }
+  .rules-list { list-style: none; }
+  .rules-list li {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 16px; color: #aaa; line-height: 1.5;
+  }
+  .rule-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; color: var(--red); min-width: 30px;
+    line-height: 1.2;
+  }
+
+  /* ── BOUTIQUE ── */
+  .boutique-section {
+    text-align: center; padding: 100px 60px;
+    background: var(--black);
+  }
+  .boutique-box {
+    display: inline-block;
+    border: 1px solid var(--border);
+    padding: 60px 80px;
+    background: var(--card);
+    position: relative;
+    overflow: hidden;
+  }
+  .boutique-box::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--red);
+  }
+  .boutique-soon {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px; letter-spacing: 6px;
+    color: var(--muted); margin-bottom: 12px;
+  }
+  .boutique-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 50px; letter-spacing: 4px; color: #fff;
+    margin-bottom: 24px;
+  }
+  .boutique-title span { color: var(--red); }
+  .boutique-desc { font-size: 16px; color: #666; margin-bottom: 36px; line-height: 1.6; }
+
+  /* ── CTA ── */
+  .cta-section {
+    text-align: center; padding: 110px 60px;
+    background: linear-gradient(180deg, var(--dark) 0%, var(--black) 100%);
+    border-top: 1px solid var(--border);
+  }
+  .cta-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px; letter-spacing: 5px; margin-bottom: 16px;
+  }
+  .cta-title span { color: var(--red); }
+  .cta-sub {
+    font-size: 17px; color: #555; letter-spacing: 3px;
+    text-transform: uppercase; margin-bottom: 48px;
+  }
+  .cta-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: #050505;
+    border-top: 1px solid var(--border);
+    padding: 28px 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 4px;
+  }
+  .footer-logo span { color: var(--red); }
+  .footer-copy { font-size: 12px; color: #333; letter-spacing: 1px; }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a {
+    color: #444; text-decoration: none; font-size: 13px;
+    letter-spacing: 1px; transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--red); }
+
+  /* ── ADMIN LOGIN MODAL ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 9000;
+    background: rgba(0,0,0,0.92);
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-box {
+    background: #0e0e0e;
+    border: 1px solid var(--border);
+    padding: 50px 48px;
+    width: 420px; max-width: 95vw;
+    position: relative;
+  }
+  .modal-box::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: var(--red);
+  }
+  .modal-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 30px; letter-spacing: 4px; color: #fff;
+    margin-bottom: 6px;
+  }
+  .modal-sub { font-size: 13px; color: #444; letter-spacing: 1px; margin-bottom: 36px; }
+  .modal-field { margin-bottom: 18px; }
+  .modal-field label {
+    display: block; font-size: 11px; font-weight: 700;
+    letter-spacing: 3px; color: #555; text-transform: uppercase; margin-bottom: 8px;
+  }
+  .modal-field input {
+    width: 100%; background: #161616; border: 1px solid #222;
+    color: #fff; padding: 12px 16px;
+    font-family: 'Rajdhani', sans-serif; font-size: 16px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .modal-field input:focus { border-color: var(--red); }
+  .modal-error {
+    font-size: 13px; color: var(--red); margin-bottom: 14px;
+    display: none; letter-spacing: 1px;
+  }
+  .modal-submit {
+    width: 100%; background: var(--red); color: #fff;
+    padding: 14px; border: none; cursor: pointer;
+    font-family: 'Rajdhani', sans-serif; font-size: 16px;
+    font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
+    transition: background 0.2s;
+  }
+  .modal-submit:hover { background: #ff1a1a; }
+  .modal-close {
+    position: absolute; top: 16px; right: 20px;
+    background: none; border: none; color: #444;
+    font-size: 24px; cursor: pointer; transition: color 0.2s;
+  }
+  .modal-close:hover { color: #fff; }
+
+  /* ── ADMIN PANEL ── */
+  .admin-panel {
+    display: none; position: fixed; inset: 0; z-index: 8000;
+    background: #080808; overflow-y: auto;
+  }
+  .admin-panel.active { display: block; }
+  .admin-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 40px;
+    background: #0a0a0a;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .admin-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 3px;
+  }
+  .admin-logo span { color: var(--red); }
+  .admin-badge {
+    background: rgba(204,0,0,0.15); border: 1px solid var(--red);
+    color: var(--red); font-size: 11px; font-weight: 700;
+    letter-spacing: 3px; padding: 4px 12px;
+  }
+  .admin-exit {
+    background: var(--red); color: #fff; border: none; cursor: pointer;
+    padding: 9px 22px; font-family: 'Rajdhani', sans-serif;
+    font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+    transition: background 0.2s;
+  }
+  .admin-exit:hover { background: #ff1a1a; }
+
+  .admin-body { padding: 40px; max-width: 960px; margin: 0 auto; }
+  .admin-section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 3px; color: #fff;
+    margin-bottom: 20px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .admin-section-title .dot { color: var(--red); }
+  .admin-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    margin-bottom: 40px;
+  }
+  .admin-field { display: flex; flex-direction: column; gap: 8px; }
+  .admin-field label {
+    font-size: 11px; font-weight: 700; letter-spacing: 3px;
+    color: #555; text-transform: uppercase;
+  }
+  .admin-field input, .admin-field textarea, .admin-field select {
+    background: #111; border: 1px solid #222; color: #fff;
+    padding: 11px 14px; font-family: 'Rajdhani', sans-serif;
+    font-size: 15px; outline: none; transition: border-color 0.2s;
+    resize: vertical;
+  }
+  .admin-field input:focus, .admin-field textarea:focus, .admin-field select:focus {
+    border-color: var(--red);
+  }
+  .admin-field.full { grid-column: 1 / -1; }
+  .admin-save {
+    background: var(--red); color: #fff; border: none; cursor: pointer;
+    padding: 13px 36px; font-family: 'Rajdhani', sans-serif;
+    font-size: 15px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    transition: background 0.2s;
+  }
+  .admin-save:hover { background: #ff1a1a; }
+  .admin-toast {
+    display: inline-block; margin-left: 14px;
+    font-size: 14px; color: #3c3; letter-spacing: 1px;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .admin-toast.show { opacity: 1; }
+
+  .admin-rules-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .admin-rule-item { display: flex; gap: 10px; align-items: center; }
+  .admin-rule-item input {
+    flex: 1; background: #111; border: 1px solid #222; color: #fff;
+    padding: 10px 14px; font-family: 'Rajdhani', sans-serif; font-size: 15px; outline: none;
+  }
+  .admin-rule-item input:focus { border-color: var(--red); }
+  .rule-del {
+    background: none; border: 1px solid #333; color: #555; cursor: pointer;
+    width: 36px; height: 36px; font-size: 18px; transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .rule-del:hover { border-color: var(--red); color: var(--red); }
+  .btn-add-rule {
+    background: transparent; border: 1px dashed #333; color: #555;
+    padding: 10px 20px; cursor: pointer; font-family: 'Rajdhani', sans-serif;
+    font-size: 14px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    transition: all 0.2s; width: 100%; margin-bottom: 20px;
+  }
+  .btn-add-rule:hover { border-color: var(--red); color: var(--red); }
+
+  .admin-feature-block {
+    background: #111; border: 1px solid #1a1a1a; padding: 20px;
+    margin-bottom: 12px;
+  }
+  .afb-row { display: grid; grid-template-columns: 80px 1fr 1fr; gap: 10px; align-items: start; }
+  .afb-row input, .afb-row textarea {
+    background: #161616; border: 1px solid #222; color: #fff;
+    padding: 9px 12px; font-family: 'Rajdhani', sans-serif;
+    font-size: 14px; outline: none; width: 100%;
+  }
+  .afb-row input:focus, .afb-row textarea:focus { border-color: var(--red); }
+  .afb-row textarea { height: 68px; resize: vertical; }
+
+  .admin-image-preview {
+    width: 100%; height: 120px; object-fit: cover;
+    border: 1px solid #222; margin-top: 8px; display: none;
+  }
+
+  /* responsive */
+  @media (max-width: 900px) {
+    nav { padding: 0 20px; }
+    .nav-links { display: none; }
+    .hero-title .line1 { font-size: 64px; }
+    .hero-title .line2 { font-size: 44px; }
+    .section { padding: 70px 20px; }
+    .rules-inner { grid-template-columns: 1fr; gap: 40px; padding: 70px 20px; }
+    .admin-grid { grid-template-columns: 1fr; }
+    .admin-body { padding: 20px; }
+    .afb-row { grid-template-columns: 60px 1fr; }
+    .afb-row textarea { grid-column: 1 / -1; }
+    footer { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ NAV ═══════════════ -->
+<nav>
+  <a href="#" class="nav-logo">DARK<span>FALL</span></a>
+  <div class="nav-links">
+    <a href="#accueil">Accueil</a>
+    <a href="#features">Le Serveur</a>
+    <a href="#regles">Règles</a>
+    <a href="#boutique">Boutique</a>
+  </div>
+  <div class="nav-right">
+    <a id="nav-discord-btn" class="btn-discord" href="#" target="_blank">
+      <svg width="18" height="14" viewBox="0 0 18 14" fill="none"><path d="M15.245 1.175A15.187 15.187 0 0 0 11.52 0c-.176.314-.38.737-.52 1.073a14.073 14.073 0 0 0-4.002 0A11.37 11.37 0 0 0 6.48 0 15.187 15.187 0 0 0 2.75 1.175C.396 4.728-.243 8.19.077 11.603a15.27 15.27 0 0 0 4.614 2.332c.372-.507.703-1.044.988-1.61a9.939 9.939 0 0 1-1.556-.748c.13-.096.258-.196.381-.3 3.001 1.382 6.253 1.382 9.218 0 .124.104.252.204.381.3-.498.295-1.02.552-1.557.749.285.566.616 1.103.988 1.61a15.24 15.24 0 0 0 4.614-2.333c.378-3.967-.642-7.4-2.903-10.428ZM6.009 9.503c-.864 0-1.573-.795-1.573-1.772s.692-1.773 1.573-1.773c.88 0 1.59.796 1.573 1.773 0 .977-.693 1.772-1.573 1.772Zm5.982 0c-.864 0-1.573-.795-1.573-1.772s.692-1.773 1.573-1.773c.88 0 1.59.796 1.573 1.773 0 .977-.692 1.772-1.573 1.772Z" fill="white"/></svg>
+      Discord
+    </a>
+    <button class="btn-admin" onclick="openAdminLogin()">⚙ Admin</button>
+  </div>
+</nav>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="hero" id="accueil">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-gradient"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Serveur FiveM — PvP &amp; FreeRoam</div>
+    <h1 class="hero-title">
+      <span class="line1" id="heroMainTitle">DARKFALL</span>
+      <span class="line2" id="heroSubTitle">FREEROAM</span>
+    </h1>
+    <p class="hero-sub" id="heroSlogan">Only the strong survive</p>
+    <div class="hero-buttons">
+      <a id="hero-join-btn" class="btn-primary" href="#">▶ Rejoindre le serveur</a>
+      <a id="hero-discord-btn" class="btn-outline" href="#" target="_blank">💬 Discord</a>
+    </div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-num" id="statSlots">48</span>
+      <span class="stat-label">Slots</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">24/7</span>
+      <span class="stat-label">En ligne</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" id="statDiscord">—</span>
+      <span class="stat-label">Membres Discord</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" id="statVersion">v1.0</span>
+      <span class="stat-label">Version</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ FEATURES ═══════════════ -->
+<div id="features">
+  <div class="section">
+    <div class="section-header">
+      <div class="section-tag">Ce qui nous rend unique</div>
+      <h2 class="section-title">POURQUOI <span class="accent">DARKFALL</span> ?</h2>
+      <div class="red-line"></div>
+    </div>
+    <div class="features-grid" id="featuresGrid"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ RÈGLES ═══════════════ -->
+<div class="rules-section" id="regles">
+  <div class="rules-inner">
+    <div>
+      <div class="section-tag">À respecter</div>
+      <h2 class="section-title" style="text-align:left;font-size:46px;">LES RÈGLES <span class="accent">DU SERVEUR</span></h2>
+      <div class="red-line" style="margin:16px 0 0;"></div>
+      <p style="margin-top:26px;color:#555;font-size:15px;line-height:1.8;" id="rulesDesc">DarkFall est un serveur sérieux. Le non-respect des règles entraîne des sanctions immédiates. Seuls les joueurs engagés ont leur place ici.</p>
+    </div>
+    <ul class="rules-list" id="rulesList"></ul>
+  </div>
+</div>
+
+<!-- ═══════════════ BOUTIQUE ═══════════════ -->
+<div class="boutique-section" id="boutique">
+  <div class="boutique-box">
+    <div class="boutique-soon">Bientôt disponible</div>
+    <h2 class="boutique-title">LA <span>BOUTIQUE</span></h2>
+    <p class="boutique-desc" id="boutiqueDesc">La boutique DarkFall arrive prochainement.<br>Grades, avantages exclusifs, skins et bien plus.</p>
+    <a id="boutiqueBtn" class="btn-primary" href="#" style="display:none;">🛒 Accéder à la boutique</a>
+    <span id="boutiqueSoon" style="font-size:14px;color:#444;letter-spacing:2px;font-weight:700;text-transform:uppercase;">Lien disponible prochainement</span>
+  </div>
+</div>
+
+<!-- ═══════════════ CTA ═══════════════ -->
+<div class="cta-section">
+  <h2 class="cta-title">PRÊT À <span>SURVIVRE</span> ?</h2>
+  <p class="cta-sub" id="ctaSub">Rejoins DarkFall FreeRoam et prouve que tu es le plus fort</p>
+  <div class="cta-buttons">
+    <a id="cta-join-btn" class="btn-primary" href="#" style="font-size:18px;padding:16px 50px;">▶ Rejoindre le serveur</a>
+    <a id="cta-discord-btn" class="btn-outline" href="#" target="_blank" style="font-size:18px;padding:16px 50px;">💬 Discord</a>
+  </div>
+</div>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer>
+  <div class="footer-logo">DARK<span>FALL</span></div>
+  <div class="footer-copy" id="footerCopy">© 2025 DarkFall FreeRoam — Tous droits réservés</div>
+  <div class="footer-links">
+    <a href="#regles">Règles</a>
+    <a id="footer-discord-link" href="#" target="_blank">Discord</a>
+    <a href="#">Boutique</a>
+  </div>
+</footer>
+
+<!-- ═══════════════ ADMIN LOGIN MODAL ═══════════════ -->
+<div class="modal-overlay" id="adminLoginModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeAdminLogin()">×</button>
+    <div class="modal-title">PANEL <span style="color:var(--red)">ADMIN</span></div>
+    <div class="modal-sub">Accès réservé aux administrateurs DarkFall</div>
+    <div class="modal-field">
+      <label>Nom d'utilisateur</label>
+      <input type="text" id="adminUser" placeholder="Identifiant" autocomplete="off">
+    </div>
+    <div class="modal-field">
+      <label>Mot de passe</label>
+      <input type="password" id="adminPass" placeholder="••••••••••">
+    </div>
+    <div class="modal-error" id="loginError">⚠ Identifiants incorrects</div>
+    <button class="modal-submit" onclick="attemptLogin()">Connexion</button>
+  </div>
+</div>
+
+<!-- ═══════════════ ADMIN PANEL ═══════════════ -->
+<div class="admin-panel" id="adminPanel">
+  <div class="admin-header">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="admin-logo">DARK<span>FALL</span></div>
+      <div class="admin-badge">PANEL ADMIN</div>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;">
+      <span style="font-size:13px;color:#444;">Connecté : OwnerDarkfall</span>
+      <button class="admin-exit" onclick="exitAdmin()">✕ Quitter le panel</button>
+    </div>
+  </div>
+
+  <div class="admin-body">
+
+    <!-- HERO -->
+    <div class="admin-section-title">HERO <span class="dot">—</span> Page principale</div>
+    <div class="admin-grid">
+      <div class="admin-field">
+        <label>Titre principal</label>
+        <input type="text" id="a_mainTitle" placeholder="DARKFALL">
+      </div>
+      <div class="admin-field">
+        <label>Sous-titre (rouge)</label>
+        <input type="text" id="a_subTitle" placeholder="FREEROAM">
+      </div>
+      <div class="admin-field full">
+        <label>Slogan</label>
+        <input type="text" id="a_slogan" placeholder="Only the strong survive">
+      </div>
+      <div class="admin-field full">
+        <label>Lien "Rejoindre le serveur" (FiveM cfx.re)</label>
+        <input type="text" id="a_joinLink" placeholder="fivem://connect/...">
+      </div>
+      <div class="admin-field full">
+        <label>Lien Discord</label>
+        <input type="text" id="a_discordLink" placeholder="https://discord.gg/...">
+      </div>
+      <div class="admin-field full">
+        <label>Image de fond du hero (URL)</label>
+        <input type="text" id="a_bgImage" placeholder="https://... ou chemin local">
+        <img class="admin-image-preview" id="bgPreview" alt="Aperçu bannière">
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="admin-section-title">STATS <span class="dot">—</span> Barre de statistiques</div>
+    <div class="admin-grid">
+      <div class="admin-field">
+        <label>Slots</label>
+        <input type="text" id="a_slots" placeholder="48">
+      </div>
+      <div class="admin-field">
+        <label>Membres Discord</label>
+        <input type="text" id="a_discord_members" placeholder="500+">
+      </div>
+      <div class="admin-field">
+        <label>Version</label>
+        <input type="text" id="a_version" placeholder="v1.0">
+      </div>
+    </div>
+
+    <!-- FEATURES -->
+    <div class="admin-section-title">FONCTIONNALITÉS <span class="dot">—</span> Cartes de présentation</div>
+    <div id="adminFeaturesBlock"></div>
+
+    <!-- RULES -->
+    <div class="admin-section-title">RÈGLES <span class="dot">—</span> Liste des règles</div>
+    <div class="admin-grid">
+      <div class="admin-field full">
+        <label>Description intro des règles</label>
+        <textarea id="a_rulesDesc" rows="3" placeholder="Texte intro..."></textarea>
+      </div>
+    </div>
+    <ul class="admin-rules-list" id="adminRulesList"></ul>
+    <button class="btn-add-rule" onclick="addRule()">+ Ajouter une règle</button>
+
+    <!-- BOUTIQUE -->
+    <div class="admin-section-title">BOUTIQUE <span class="dot">—</span> Section Tebex</div>
+    <div class="admin-grid">
+      <div class="admin-field full">
+        <label>Lien Tebex (laisse vide = "prochainement")</label>
+        <input type="text" id="a_tebexLink" placeholder="https://...tebex.io/...">
+      </div>
+      <div class="admin-field full">
+        <label>Description boutique</label>
+        <textarea id="a_boutiqueDesc" rows="3"></textarea>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="admin-section-title">FOOTER <span class="dot">—</span></div>
+    <div class="admin-grid">
+      <div class="admin-field full">
+        <label>Texte copyright</label>
+        <input type="text" id="a_footerCopy" placeholder="© 2025 DarkFall FreeRoam — Tous droits réservés">
+      </div>
+    </div>
+
+    <div style="margin-top:10px;margin-bottom:60px;">
+      <button class="admin-save" onclick="saveAll()">💾 Sauvegarder toutes les modifications</button>
+      <span class="admin-toast" id="saveToast">✔ Modifications sauvegardées !</span>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   DONNÉES PAR DÉFAUT
+══════════════════════════════════════ */
+const DEFAULTS = {
+  mainTitle: 'DARKFALL',
+  subTitle: 'FREEROAM',
+  slogan: 'Only the strong survive',
+  joinLink: '#',
+  discordLink: '#',
+  bgImage: '',
+  slots: '48',
+  discord_members: '—',
+  version: 'v1.0',
+  rulesDesc: 'DarkFall est un serveur sérieux. Le non-respect des règles entraîne des sanctions immédiates. Seuls les joueurs engagés ont leur place ici.',
+  tebexLink: '',
+  boutiqueDesc: 'La boutique DarkFall arrive prochainement.\nGrades, avantages exclusifs, skins et bien plus.',
+  footerCopy: '© 2025 DarkFall FreeRoam — Tous droits réservés',
+  features: [
+    { icon: '💀', title: 'PvP libre', desc: 'Combats non-stop dans une ville sans pitié. Chaque ennemi est une cible potentielle.' },
+    { icon: '🏙️', title: 'FreeRoam total', desc: 'Explore la map sans limites, prends le contrôle des zones et domine le territoire.' },
+    { icon: '🔫', title: 'Armement custom', desc: 'Un arsenal exclusif avec des armes modifiées et des munitions rares.' },
+    { icon: '💰', title: 'Économie de guerre', desc: 'Gagne de l\'argent en éliminant tes ennemis et en contrôlant les points chauds.' },
+    { icon: '🚗', title: 'Véhicules custom', desc: 'Des voitures et motos exclusives pour te déplacer et dominer les rues.' },
+    { icon: '🎮', title: 'Scripts uniques', desc: 'Des scripts maison développés pour DarkFall. Aucun autre serveur ne propose ça.' }
+  ],
+  rules: [
+    'Le RDM excessif et sans contexte est interdit',
+    'Le VDM (Vehicle DeathMatch) est interdit',
+    'Respecter les autres joueurs — zéro toxicité',
+    'L\'exploitation de bugs est interdite — les signaler',
+    'Aucun cheat, hack ou modification non autorisée',
+    'Écouter et respecter les décisions du staff',
+    'La triche en PvP entraîne un ban permanent'
+  ]
+};
+
+/* ══════════════════════════════════════
+   STORAGE
+══════════════════════════════════════ */
+function loadData() {
+  try {
+    const raw = localStorage.getItem('darkfall_site_data');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(DEFAULTS));
+}
+function saveData(data) {
+  localStorage.setItem('darkfall_site_data', JSON.stringify(data));
+}
+function getData() { return loadData(); }
+
+/* ══════════════════════════════════════
+   RENDER SITE
+══════════════════════════════════════ */
+function renderSite() {
+  const d = getData();
+
+  // Hero
+  document.getElementById('heroMainTitle').textContent = d.mainTitle || DEFAULTS.mainTitle;
+  document.getElementById('heroSubTitle').textContent = d.subTitle || DEFAULTS.subTitle;
+  document.getElementById('heroSlogan').textContent = d.slogan || DEFAULTS.slogan;
+
+  const bgEl = document.getElementById('heroBg');
+  bgEl.style.backgroundImage = d.bgImage ? `url('${d.bgImage}')` : '';
+
+  const joinLinks = [
+    document.getElementById('hero-join-btn'),
+    document.getElementById('cta-join-btn')
+  ];
+  joinLinks.forEach(el => { if(el) el.href = d.joinLink || '#'; });
+
+  const discordLinks = [
+    document.getElementById('nav-discord-btn'),
+    document.getElementById('hero-discord-btn'),
+    document.getElementById('cta-discord-btn'),
+    document.getElementById('footer-discord-link')
+  ];
+  discordLinks.forEach(el => { if(el) el.href = d.discordLink || '#'; });
+
+  // Stats
+  document.getElementById('statSlots').textContent = d.slots || DEFAULTS.slots;
+  document.getElementById('statDiscord').textContent = d.discord_members || DEFAULTS.discord_members;
+  document.getElementById('statVersion').textContent = d.version || DEFAULTS.version;
+
+  // Features
+  const fg = document.getElementById('featuresGrid');
+  const features = d.features && d.features.length ? d.features : DEFAULTS.features;
+  fg.innerHTML = features.map(f => `
+    <div class="feature-card">
+      <span class="feature-icon">${f.icon}</span>
+      <div class="feature-title">${f.title}</div>
+      <p class="feature-desc">${f.desc}</p>
+    </div>
+  `).join('');
+
+  // Rules
+  const rl = document.getElementById('rulesList');
+  const rules = d.rules && d.rules.length ? d.rules : DEFAULTS.rules;
+  document.getElementById('rulesDesc').textContent = d.rulesDesc || DEFAULTS.rulesDesc;
+  rl.innerHTML = rules.map((r, i) => `
+    <li><span class="rule-num">${String(i+1).padStart(2,'0')}</span>${r}</li>
+  `).join('');
+
+  // Boutique
+  const tl = d.tebexLink || '';
+  const boutiqueBtn = document.getElementById('boutiqueBtn');
+  const boutiqueSoon = document.getElementById('boutiqueSoon');
+  if(tl) {
+    boutiqueBtn.href = tl; boutiqueBtn.style.display = 'inline-block';
+    boutiqueSoon.style.display = 'none';
+  } else {
+    boutiqueBtn.style.display = 'none';
+    boutiqueSoon.style.display = '';
+  }
+  document.getElementById('boutiqueDesc').innerHTML = (d.boutiqueDesc || DEFAULTS.boutiqueDesc).replace(/\n/g, '<br>');
+
+  // CTA
+  document.getElementById('ctaSub').textContent = `Rejoins ${d.mainTitle || 'DarkFall'} ${d.subTitle || 'FreeRoam'} et prouve que tu es le plus fort`;
+
+  // Footer
+  document.getElementById('footerCopy').textContent = d.footerCopy || DEFAULTS.footerCopy;
+}
+
+/* ══════════════════════════════════════
+   ADMIN LOGIN
+══════════════════════════════════════ */
+function openAdminLogin() {
+  document.getElementById('adminLoginModal').classList.add('active');
+  document.getElementById('adminUser').value = '';
+  document.getElementById('adminPass').value = '';
+  document.getElementById('loginError').style.display = 'none';
+}
+function closeAdminLogin() {
+  document.getElementById('adminLoginModal').classList.remove('active');
+}
+function attemptLogin() {
+  const u = document.getElementById('adminUser').value.trim();
+  const p = document.getElementById('adminPass').value;
+  if(u === 'OwnerDrakfall' && p === 'Darkfall2K26PVP') {
+    closeAdminLogin();
+    openAdminPanel();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('adminPass').value = '';
+  }
+}
+document.getElementById('adminPass').addEventListener('keydown', function(e) {
+  if(e.key === 'Enter') attemptLogin();
+});
+
+/* ══════════════════════════════════════
+   ADMIN PANEL
+══════════════════════════════════════ */
+function openAdminPanel() {
+  const d = getData();
+  document.getElementById('adminPanel').classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  // Remplir les champs
+  document.getElementById('a_mainTitle').value = d.mainTitle || DEFAULTS.mainTitle;
+  document.getElementById('a_subTitle').value = d.subTitle || DEFAULTS.subTitle;
+  document.getElementById('a_slogan').value = d.slogan || DEFAULTS.slogan;
+  document.getElementById('a_joinLink').value = d.joinLink || '';
+  document.getElementById('a_discordLink').value = d.discordLink || '';
+  document.getElementById('a_bgImage').value = d.bgImage || '';
+  document.getElementById('a_slots').value = d.slots || DEFAULTS.slots;
+  document.getElementById('a_discord_members').value = d.discord_members || DEFAULTS.discord_members;
+  document.getElementById('a_version').value = d.version || DEFAULTS.version;
+  document.getElementById('a_rulesDesc').value = d.rulesDesc || DEFAULTS.rulesDesc;
+  document.getElementById('a_tebexLink').value = d.tebexLink || '';
+  document.getElementById('a_boutiqueDesc').value = d.boutiqueDesc || DEFAULTS.boutiqueDesc;
+  document.getElementById('a_footerCopy').value = d.footerCopy || DEFAULTS.footerCopy;
+
+  // Aperçu image
+  updateBgPreview(d.bgImage || '');
+
+  // Features
+  renderAdminFeatures(d.features && d.features.length ? d.features : JSON.parse(JSON.stringify(DEFAULTS.features)));
+
+  // Règles
+  renderAdminRules(d.rules && d.rules.length ? d.rules : [...DEFAULTS.rules]);
+}
+
+function exitAdmin() {
+  document.getElementById('adminPanel').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function updateBgPreview(url) {
+  const prev = document.getElementById('bgPreview');
+  if(url) { prev.src = url; prev.style.display = 'block'; }
+  else { prev.style.display = 'none'; }
+}
+document.getElementById('a_bgImage').addEventListener('input', function() {
+  updateBgPreview(this.value);
+});
+
+/* Features admin */
+let adminFeatures = [];
+function renderAdminFeatures(feats) {
+  adminFeatures = feats.map(f => ({...f}));
+  const el = document.getElementById('adminFeaturesBlock');
+  el.innerHTML = adminFeatures.map((f, i) => `
+    <div class="admin-feature-block">
+      <div class="afb-row">
+        <input type="text" placeholder="🎮" value="${escHtml(f.icon)}" oninput="adminFeatures[${i}].icon=this.value">
+        <input type="text" placeholder="Titre" value="${escHtml(f.title)}" oninput="adminFeatures[${i}].title=this.value">
+        <textarea placeholder="Description" oninput="adminFeatures[${i}].desc=this.value">${escHtml(f.desc)}</textarea>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* Rules admin */
+let adminRules = [];
+function renderAdminRules(rules) {
+  adminRules = [...rules];
+  const el = document.getElementById('adminRulesList');
+  el.innerHTML = adminRules.map((r, i) => `
+    <li class="admin-rule-item">
+      <input type="text" value="${escHtml(r)}" oninput="adminRules[${i}]=this.value" placeholder="Règle...">
+      <button class="rule-del" onclick="deleteRule(${i})">×</button>
+    </li>
+  `).join('');
+}
+function addRule() {
+  adminRules.push('');
+  renderAdminRules(adminRules);
+  const inputs = document.querySelectorAll('#adminRulesList input');
+  if(inputs.length) inputs[inputs.length-1].focus();
+}
+function deleteRule(i) {
+  adminRules.splice(i, 1);
+  renderAdminRules(adminRules);
+}
+
+/* SAVE ALL */
+function saveAll() {
+  const d = {
+    mainTitle: document.getElementById('a_mainTitle').value,
+    subTitle: document.getElementById('a_subTitle').value,
+    slogan: document.getElementById('a_slogan').value,
+    joinLink: document.getElementById('a_joinLink').value,
+    discordLink: document.getElementById('a_discordLink').value,
+    bgImage: document.getElementById('a_bgImage').value,
+    slots: document.getElementById('a_slots').value,
+    discord_members: document.getElementById('a_discord_members').value,
+    version: document.getElementById('a_version').value,
+    rulesDesc: document.getElementById('a_rulesDesc').value,
+    tebexLink: document.getElementById('a_tebexLink').value,
+    boutiqueDesc: document.getElementById('a_boutiqueDesc').value,
+    footerCopy: document.getElementById('a_footerCopy').value,
+    features: adminFeatures.filter(f => f.title),
+    rules: adminRules.filter(r => r.trim())
+  };
+  saveData(d);
+  renderSite();
+  const toast = document.getElementById('saveToast');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function escHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+renderSite();
+</script>
+</body>
+</html>
